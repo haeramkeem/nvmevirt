@@ -1064,6 +1064,10 @@ void kv_init_namespace(struct nvmev_ns *ns, uint32_t id, uint64_t size, void *ma
 	ns->size = size;
 	ns->mapped = mapped_addr;
 	/*register io command handler*/
+	// @hk
+	// These registered funcs are called in `nvme_io_worker()`
+	// Only when the configured SSD type is `KV_PROTOTYPE`
+	// @see `nvmev_io_worker()`
 	ns->proc_io_cmd = kv_proc_nvme_io_cmd;
 	/*register CSS specific io command functions*/
 	ns->identify_io_cmd = kv_identify_nvme_io_cmd;

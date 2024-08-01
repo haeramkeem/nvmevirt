@@ -194,6 +194,8 @@ static int nvmev_dispatcher(void *data)
 
 static void NVMEV_DISPATCHER_INIT(struct nvmev_dev *nvmev_vdev)
 {
+	// @hk
+	// Create dispatcher thread and run the func `nvmev_dispatcher()`.
 	nvmev_vdev->nvmev_dispatcher = kthread_create(nvmev_dispatcher, NULL, "nvmev_dispatcher");
 	if (nvmev_vdev->config.cpu_nr_dispatcher != -1)
 		kthread_bind(nvmev_vdev->nvmev_dispatcher, nvmev_vdev->config.cpu_nr_dispatcher);
@@ -638,6 +640,8 @@ static int NVMeV_init(void)
 
 	__print_perf_configs();
 
+	// @hk
+	// Initiating worker and the dispatcher.
 	NVMEV_IO_WORKER_INIT(nvmev_vdev);
 	NVMEV_DISPATCHER_INIT(nvmev_vdev);
 
@@ -685,5 +689,8 @@ static void NVMeV_exit(void)
 }
 
 MODULE_LICENSE("GPL v2");
+// @hk
+// Starting point of the debugging.
+// Use `ctags` to track the func call stack manually.
 module_init(NVMeV_init);
 module_exit(NVMeV_exit);
