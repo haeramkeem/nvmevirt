@@ -502,6 +502,41 @@ static struct mapping_entry delete_mapping_entry(struct kv_ftl *kv_ftl, struct n
  *   if mapping_entry exist -> read from mem_offset
  *   else -> key doesn't exist!
  */
+
+/**
+ * @hk: Command printer
+void __utils_print_nvme_kv_store_command(struct nvme_kv_command cmd) {
+	union {
+		struct nvme_kv_command input;
+		__u32 output[16];
+	} data;
+
+	data.input = cmd;
+
+	for (int i = 0; i < 16; i += 2) {
+		printk(KERN_INFO "%03d: %08x %08x", i, data.output[i], data.output[i+1]);
+	}
+
+	printk(KERN_INFO "opcode:       %02x", cmd.kv_store.opcode);
+	printk(KERN_INFO "flags:        %02x", cmd.kv_store.flags);
+	printk(KERN_INFO "command_id:   %04x", cmd.kv_store.command_id);
+	printk(KERN_INFO "nsid:         %08x", cmd.kv_store.nsid);
+	printk(KERN_INFO "rsvd:         %016x", cmd.kv_store.rsvd);
+	printk(KERN_INFO "offset:       %08x", cmd.kv_store.offset);
+	printk(KERN_INFO "rsvd2:        %08x", cmd.kv_store.rsvd2);
+	printk(KERN_INFO "dptr:         %016x %016x", cmd.kv_store.dptr.prp1, cmd.kv_store.dptr.prp2);
+	printk(KERN_INFO "value_len:    %08x", cmd.kv_store.value_len);
+	printk(KERN_INFO "key_len:      %02x", cmd.kv_store.key_len);
+	printk(KERN_INFO "option:       %02x", cmd.kv_store.option);
+	printk(KERN_INFO "invalid_byte: %02x", cmd.kv_store.invalid_byte);
+	printk(KERN_INFO "rsvd3:        %02x", cmd.kv_store.rsvd3);
+	printk(KERN_INFO "rsvd4:        %02x", cmd.kv_store.rsvd4);
+	for (int i = 0; i < 16; i++) {
+	printk(KERN_INFO "key[%02d]:      %c", i, cmd.kv_store.key[i]);
+	}
+}
+ */
+
 static unsigned int __do_perform_kv_io(struct kv_ftl *kv_ftl, struct nvme_kv_command cmd,
 				       unsigned int *status)
 {
@@ -995,6 +1030,9 @@ bool kv_proc_nvme_io_cmd(struct nvmev_ns *ns, struct nvmev_request *req, struct 
 	return true;
 }
 
+// @hk
+// Called in `nvmev_io_worker()`
+// @see `nvmev_io_worker()`
 bool kv_identify_nvme_io_cmd(struct nvmev_ns *ns, struct nvme_command cmd)
 {
 	return is_kv_cmd(cmd.common.opcode);
