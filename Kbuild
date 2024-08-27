@@ -2,13 +2,13 @@
 #CONFIG_NVMEVIRT_NVM := y
 #CONFIG_NVMEVIRT_SSD := y
 #CONFIG_NVMEVIRT_ZNS := y
-CONFIG_NVMEVIRT_KV := y
+#CONFIG_NVMEVIRT_KV := y
 
 # Additional debug option
-CONFIG_NVMEV_VERBOSE        := y
-CONFIG_NVMEV_DEBUG          := y
-CONFIG_NVMEV_DEBUG_VERBOSE  := y
-CONFIG_NVMEV_DEBUG_TRACE    := y
+#CONFIG_NVMEV_VERBOSE        := y
+#CONFIG_NVMEV_DEBUG          := y
+#CONFIG_NVMEV_DEBUG_VERBOSE  := y
+#CONFIG_NVMEV_DEBUG_TRACE    := y
 
 obj-m   := nvmev.o
 nvmev-objs := main.o pci.o admin.o io.o dma.o
