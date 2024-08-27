@@ -491,8 +491,12 @@ static size_t __nvmev_proc_io(int sqid, int sq_entry, size_t *io_size)
 #endif
 
 	// @hk
-	// `ns->proc_io_cmd()` == `conv_proc_nvme_io_cmd()` for conv ssd mode
+	// ---
+	// `ns->proc_io_cmd()` == `conv_proc_nvme_io_cmd()` for `SSD_TYPE_CONV` mode
 	// @see `conv_init_namespace()`
+	// ---
+	// `ns->proc_io_cmd()` == `kv_proc_nvme_io_cmd()` for 'SSD_TYPE_KV' mode
+	// @see `kv_init_namespace()`
 	if (!ns->proc_io_cmd(ns, &req, &ret))
 		return false;
 	*io_size = __cmd_io_size(&sq_entry(sq_entry).rw);
@@ -664,7 +668,13 @@ static int nvmev_io_worker(void *data)
 					struct nvmev_submission_queue *sq =
 						nvmev_vdev->sqes[w->sqid];
 					ns = &nvmev_vdev->ns[0];
+					// @hk
+					// `ns->identify_io_cmd()` is initiated to `kv_identify_nvme_io_cmd()`
+					// @see `kv_init_namespace()`
 					if (ns->identify_io_cmd(ns, sq_entry(w->sq_entry))) {
+						// @hk
+						// `ns->perform_io_cmd()` is initiated to `kv_perform_nvme_io_cmd()`
+						// @see `kv_init_namespace()`
 						w->result0 = ns->perform_io_cmd(
 							ns, &sq_entry(w->sq_entry), &(w->status));
 					} else {
@@ -783,6 +793,9 @@ void NVMEV_IO_WORKER_INIT(struct nvmev_dev *nvmev_vdev)
 
 		snprintf(worker->thread_name, sizeof(worker->thread_name), "nvmev_io_worker_%d", worker_id);
 
+		// @hk
+		// Start worker queue
+		// Step in to the func `nvmev_io_worker()` to track what worker do
 		worker->task_struct = kthread_create(nvmev_io_worker, worker, "%s", worker->thread_name);
 
 		kthread_bind(worker->task_struct, nvmev_vdev->config.cpu_nr_io_workers[worker_id]);
