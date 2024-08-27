@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source $(cd $(dirname $0) && pwd)/config.env
+. $(cd $(dirname $0) && pwd)/config.env
 
 MEMMAP_START=${NVMEV_MEMMAP_START?"error: Environment variable 'NVMEV_MEMMAP_START' not set."}
 MEMMAP_SIZE=${NVMEV_MEMMAP_SIZE?"error: Environment variable 'NVMEV_MEMMAP_SIZE' not set."}
