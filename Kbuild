@@ -12,7 +12,7 @@ CONFIG_NVMEV_DEBUG_TRACE    := y
 
 obj-m   := nvmev.o
 nvmev-objs := main.o pci.o admin.o io.o dma.o
-ccflags-y += -Wno-unused-variable -Wno-unused-function
+ccflags-y += -Wno-unused-variable -Wno-unused-function -msoft-float -msse -msse2 -msse3 -msse4
 
 ccflags-$(CONFIG_NVMEVIRT_NVM) += -DBASE_SSD=INTEL_OPTANE
 nvmev-$(CONFIG_NVMEVIRT_NVM) += simple_ftl.o
