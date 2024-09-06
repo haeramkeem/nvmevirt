@@ -112,6 +112,7 @@ MODULE_PARM_DESC(cpus, "CPU list for process, completion(int.) threads, Seperate
 module_param(debug, uint, 0644);
 
 // Returns true if an event is processed
+__attribute__((no_instrument_function))
 static bool nvmev_proc_dbs(void)
 {
 	int qid;
@@ -121,12 +122,14 @@ static bool nvmev_proc_dbs(void)
 	bool updated = false;
 
 	// Admin queue
+	// @hk: Submission queue: Doorbell index [0]
 	new_db = nvmev_vdev->dbs[0];
 	if (new_db != nvmev_vdev->old_dbs[0]) {
 		nvmev_proc_admin_sq(new_db, nvmev_vdev->old_dbs[0]);
 		nvmev_vdev->old_dbs[0] = new_db;
 		updated = true;
 	}
+	// @hk: Completion queue: Doorbell index [1]
 	new_db = nvmev_vdev->dbs[1];
 	if (new_db != nvmev_vdev->old_dbs[1]) {
 		nvmev_proc_admin_cq(new_db, nvmev_vdev->old_dbs[1]);
@@ -134,7 +137,8 @@ static bool nvmev_proc_dbs(void)
 		updated = true;
 	}
 
-	// Submission queues
+	// IO queue
+	// @hk: Submission queues: Doorbell index [even]
 	for (qid = 1; qid <= nvmev_vdev->nr_sq; qid++) {
 		if (nvmev_vdev->sqes[qid] == NULL)
 			continue;
@@ -147,7 +151,7 @@ static bool nvmev_proc_dbs(void)
 		}
 	}
 
-	// Completion queues
+	// @hk: Completion queues: Doorbell index [odd]
 	for (qid = 1; qid <= nvmev_vdev->nr_cq; qid++) {
 		if (nvmev_vdev->cqes[qid] == NULL)
 			continue;
@@ -190,6 +194,8 @@ static int nvmev_dispatcher(void *data)
 
 static void NVMEV_DISPATCHER_INIT(struct nvmev_dev *nvmev_vdev)
 {
+	// @hk
+	// Create dispatcher thread and run the func `nvmev_dispatcher()`.
 	nvmev_vdev->nvmev_dispatcher = kthread_create(nvmev_dispatcher, NULL, "nvmev_dispatcher");
 	if (nvmev_vdev->config.cpu_nr_dispatcher != -1)
 		kthread_bind(nvmev_vdev->nvmev_dispatcher, nvmev_vdev->config.cpu_nr_dispatcher);
@@ -593,6 +599,9 @@ static void __print_base_config(void)
 		break;
 	case WD_ZN540:
 		type = "WD ZN540 ZNS SSD";
+                break;
+	case FDP_PROTOTYPE:
+		type = "FDP SSD Prototype";
 		break;
 	}
 
@@ -631,6 +640,8 @@ static int NVMeV_init(void)
 
 	__print_perf_configs();
 
+	// @hk
+	// Initiating worker and the dispatcher.
 	NVMEV_IO_WORKER_INIT(nvmev_vdev);
 	NVMEV_DISPATCHER_INIT(nvmev_vdev);
 
@@ -678,5 +689,8 @@ static void NVMeV_exit(void)
 }
 
 MODULE_LICENSE("GPL v2");
+// @hk
+// Starting point of the debugging.
+// Use `ctags` to track the func call stack manually.
 module_init(NVMeV_init);
 module_exit(NVMeV_exit);
